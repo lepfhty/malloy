@@ -1424,7 +1424,9 @@ describe.each(runtimes.runtimeList)('%s', (databaseName, runtime) => {
   describe('string_agg', () => {
     // Capability matrix: what each dialect supports for string_agg
     const canOrderBy = !['databricks'].includes(databaseName);
-    const canFanout = !['snowflake', 'mysql'].includes(databaseName);
+    const canFanout = !['snowflake', 'mysql', 'clickhouse'].includes(
+      databaseName
+    );
     const canFanoutOrderBy = ![
       'bigquery',
       'snowflake',
@@ -1432,6 +1434,7 @@ describe.each(runtimes.runtimeList)('%s', (databaseName, runtime) => {
       'presto',
       'mysql',
       'databricks',
+      'clickhouse',
     ].includes(databaseName);
 
     it(`works no order by - ${databaseName}`, async () => {
@@ -1630,7 +1633,9 @@ describe.each(runtimes.runtimeList)('%s', (databaseName, runtime) => {
 
   describe('string_agg_distinct', () => {
     // Capability matrix: what each dialect supports for string_agg_distinct
-    const canOrderByDistinct = !['databricks'].includes(databaseName);
+    const canOrderByDistinct = !['databricks', 'clickhouse'].includes(
+      databaseName
+    );
 
     it.when(canOrderByDistinct)(
       `actually distincts - ${databaseName}`,
