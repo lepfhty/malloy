@@ -2,7 +2,7 @@
 
 ClickHouse dialect for Malloy. Targets ClickHouse 25.3+.
 
-Test status: 645 / 737 passing (88%), 45 skipped, 46 failing.
+Test status: 645 / 737 passing (88%), 47 skipped, 44 failing. 10 of 18 test suites fully green.
 
 ## Connection Settings
 
@@ -173,7 +173,7 @@ The dialect class doesn't currently have access to the server version at SQL gen
 
 For now, target a minimum version and document version-dependent features here.
 
-## Remaining Test Failures (46)
+## Remaining Test Failures (44)
 
 | Category | Count | Root cause | Status |
 |---|---|---|---|
@@ -186,6 +186,6 @@ For now, target a minimum version and document version-dependent features here.
 | Misc record/array edge cases | ~3 | Special chars in field names, nested property access through joins. | Case-by-case |
 
 ### Resolved
-- **CAST NULL to compound types**: `sqlCast` now returns `CAST([] AS ...)` or `CAST(tuple() AS ...)` for NULL casts to Array/Tuple. Tests use `emptyOn: ['clickhouse']`.
+- **CAST NULL to compound types**: `sqlCast` returns `CAST([] AS ...)` for NULL-to-Array casts. NULL-to-Tuple casts are skipped (ClickHouse can't produce null records — `tuple()` has wrong element count). Tests use `emptyOn` / `skip` for ClickHouse.
 - **Double nesting**: Fixed by setting `hasLateralColumnAliasInSelect = true` — compiler now uses `__remapped_group_set` to avoid shadowing the `group_set` column that `groupArrayIf` filters on.
 - **Symmetric aggregate precision**: `toDecimal128(..., 8)` preserves fractional values (was `0`, truncating decimals).
