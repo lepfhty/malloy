@@ -564,14 +564,9 @@ export class ClickHouseDialect extends Dialect {
     const {op, srcTypeDef, dstTypeDef, dstSQLType} = this.sqlCastPrep(cast);
     const tz = qtz(qi);
 
-    // ClickHouse can't CAST NULL to Array or Tuple. Return empty values instead.
-    if (srcSQL === 'NULL') {
-      if (dstTypeDef.type === 'array') {
-        return `CAST([] AS ${dstSQLType})`;
-      }
-      if (dstTypeDef.type === 'record') {
-        return `CAST(tuple() AS ${dstSQLType})`;
-      }
+    // ClickHouse can't CAST NULL to Array. Return empty array instead.
+    if (srcSQL === 'NULL' && dstTypeDef.type === 'array') {
+      return `CAST([] AS ${dstSQLType})`;
     }
 
     if (op === 'timestamp::date' && tz) {
