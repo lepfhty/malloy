@@ -944,7 +944,7 @@ export class QueryQuery extends QueryField {
         const passKeys = this.generateSQLPassthroughKeys(qs);
         structSQL = `(SELECT ${qs.dialect.sqlGenerateUUID()} as ${qs.dialect.sqlMaybeQuoteIdentifier(
           '__distinct_key'
-        )}, x.* ${passKeys} FROM ${structSQL} as x)`;
+        )}, * ${passKeys} FROM ${structSQL})`;
       }
       let onCondition = '';
       if (qs.parent === undefined) {
@@ -1117,7 +1117,7 @@ export class QueryQuery extends QueryField {
         const passKeys = this.generateSQLPassthroughKeys(qs);
         structSQL = `(SELECT ${qs.dialect.sqlGenerateUUID()} as ${qs.dialect.sqlMaybeQuoteIdentifier(
           '__distinct_key'
-        )}, x.* ${passKeys} FROM ${structSQL} as x)`;
+        )}, * ${passKeys} FROM ${structSQL})`;
       }
       s += `FROM ${structSQL} as ${ji.alias}\n`;
     } else {
