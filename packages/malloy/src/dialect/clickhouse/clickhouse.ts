@@ -565,7 +565,7 @@ export class ClickHouseDialect extends Dialect {
     const tz = qtz(qi);
 
     // ClickHouse can't CAST NULL to Array. Return empty array instead.
-    if (srcSQL === 'NULL' && dstTypeDef.type === 'array') {
+    if (srcSQL === 'NULL' && dstTypeDef?.type === 'array') {
       return `CAST([] AS ${dstSQLType})`;
     }
 
