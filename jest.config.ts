@@ -1,9 +1,6 @@
 import type {Config} from 'jest';
 
 process.env.TZ = 'America/Los_Angeles';
-process.env['CLICKHOUSE_HOST'] ??= 'http://localhost:18123';
-process.env['CLICKHOUSE_DATABASE'] ??= 'malloytest';
-process.env['MALLOY_DATABASE'] ??= 'clickhouse';
 
 const transformIgnoreModules = ['@motherduck/wasm-client'].join('|');
 

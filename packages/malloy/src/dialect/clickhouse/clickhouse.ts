@@ -572,7 +572,7 @@ export class ClickHouseDialect extends Dialect {
     if (op === 'timestamp::date' && tz) {
       return `toDate(toTimeZone(${srcSQL}, '${tz}'))`;
     } else if (op === 'date::timestamp' && tz) {
-      return `toTimeZone(toDateTime64(${srcSQL}, 3), '${tz}')`;
+      return `toDateTime64(${srcSQL}, 3, '${tz}')`;
     }
     if (!TD.eq(srcTypeDef, dstTypeDef)) {
       if (TD.isString(dstTypeDef)) {

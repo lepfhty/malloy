@@ -89,6 +89,7 @@ export class ClickHouseConnection
           group_by_use_nulls: 1,
           cast_keep_nullable: 1,
           output_format_json_named_tuples_as_objects: 1,
+          date_time_output_format: 'iso',
         },
       });
     }
