@@ -2,7 +2,7 @@
 
 ClickHouse dialect for Malloy. Targets ClickHouse 25.3+.
 
-Test status: 643 / 737 passing (87%), 45 skipped, 48 failing.
+Test status: 645 / 737 passing (88%), 45 skipped, 46 failing.
 
 ## Connection Settings
 
@@ -173,15 +173,19 @@ The dialect class doesn't currently have access to the server version at SQL gen
 
 For now, target a minimum version and document version-dependent features here.
 
-## Remaining Test Failures (53)
+## Remaining Test Failures (46)
 
 | Category | Count | Root cause | Status |
 |---|---|---|---|
+| Timezone semantics | ~11 | Timezone offset calculations, literal timezone handling, `Date` vs `DateTime64` type mismatches in truncation. | Partially fixable |
 | JOIN ON restrictions | ~8 | ClickHouse requires at least one equality predicate in JOIN ON. Joins with `ON 1=1`, cross joins, or complex expressions fail. Includes composite_sources and cross join tests. | ClickHouse limitation |
 | string_agg ordering/fanout | ~7 | `groupArray` has no ORDER BY. DESC needs `arrayReverseSort` but template is static. Expression-based ordering needs companion-array `arraySort((x,y)->y, vals, keys)` but requires expression compiler to expose order-by parts separately. | Needs expression compiler changes |
-| Timezone semantics | ~11 | Timezone offset calculations, literal timezone handling, `Date` vs `DateTime64` type mismatches. | Partially fixable |
 | `sqlAggDistinct` not implemented | ~6 | Generalized distinct aggregate (fanout). DuckDB uses correlated subquery with UNNEST — ClickHouse can't handle correlated subqueries. Inline `arrayReduce`+`arrayMap` fails because `func` callback generates standard aggregate calls that can't accept array arguments, and `groupArray` can't nest inside another aggregate. | Blocked: needs new approach |
 | Compiler CASE WHEN with complex types | ~5 | Malloy compiler generates `CASE WHEN group_set=N THEN array_col END` which produces `Nullable(Array)` — illegal in ClickHouse. Outside dialect control. | Needs compiler change |
-| CAST NULL to compound type | 4 | `CAST(NULL AS Array(...))` is illegal in ClickHouse. | ClickHouse limitation |
-| Minor function differences | ~4 | `concat`: DateTime64(3) renders `.000` milliseconds. `chr`/`unicode`: no codepoint function (25.12 adds `system.unicode`). `rand()`: deterministic per-row. | Version-dependent / ClickHouse behavior |
+| Minor function differences | ~4 | `concat`: DateTime64(3) renders `.000` milliseconds. `chr`/`unicode`: no codepoint function (25.12 adds `system.unicode`). `rand()`: deterministic per-row, so `rand()=rand()` is always true. | Version-dependent / ClickHouse behavior |
 | Misc record/array edge cases | ~3 | Special chars in field names, nested property access through joins. | Case-by-case |
+
+### Resolved
+- **CAST NULL to compound types**: `sqlCast` now returns `CAST([] AS ...)` or `CAST(tuple() AS ...)` for NULL casts to Array/Tuple. Tests use `emptyOn: ['clickhouse']`.
+- **Double nesting**: Fixed by setting `hasLateralColumnAliasInSelect = true` — compiler now uses `__remapped_group_set` to avoid shadowing the `group_set` column that `groupArrayIf` filters on.
+- **Symmetric aggregate precision**: `toDecimal128(..., 8)` preserves fractional values (was `0`, truncating decimals).
