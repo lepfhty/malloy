@@ -232,14 +232,4 @@ export class ClickHouseConnection
     return {rows, totalRows: rows.length};
   }
 
-  private fillStructDefFromTypeMap(
-    structDef: StructDef,
-    typeMap: {[name: string]: string}
-  ) {
-    for (const fieldName in typeMap) {
-      const clickhouseType = typeMap[fieldName];
-      const malloyType = this.dialect.sqlTypeToMalloyType(clickhouseType);
-      structDef.fields.push({...malloyType, name: fieldName});
-    }
-  }
 }

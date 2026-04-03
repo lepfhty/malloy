@@ -95,7 +95,7 @@ export class ClickHouseDialect extends Dialect {
   unnestWithNumbers = false;
   defaultSampling = {rows: 50000};
   supportUnnestArrayAgg = true;
-  supportsAggDistinct = true;
+  supportsAggDistinct = false;
   supportsCTEinCoorelatedSubQueries = true;
   supportsSafeCast = false;
   dontUnionIndex = false;
@@ -322,7 +322,7 @@ export class ClickHouseDialect extends Dialect {
     groupSet: number,
     sqlName: string
   ): string {
-    return `any(CASE WHEN group_set=${groupSet} THEN ${name} END) as ${sqlName}`;
+    return `anyIf(${name}, group_set=${groupSet}) as ${sqlName}`;
   }
 
   sqlCoaleseMeasuresInline(
@@ -340,15 +340,9 @@ export class ClickHouseDialect extends Dialect {
     alias: string,
     _fieldList: DialectFieldList,
     needDistinctKey: boolean,
-    isArray: boolean,
+    _isArray: boolean,
     _isInNestedPipeline: boolean
   ): string {
-    if (isArray) {
-      if (needDistinctKey) {
-        return `LEFT ARRAY JOIN ${source} AS ${alias}, arrayEnumerate(${source}) AS __row_id_from_${alias}`;
-      }
-      return `LEFT ARRAY JOIN ${source} AS ${alias}`;
-    }
     if (needDistinctKey) {
       return `LEFT ARRAY JOIN ${source} AS ${alias}, arrayEnumerate(${source}) AS __row_id_from_${alias}`;
     }
@@ -385,13 +379,6 @@ export class ClickHouseDialect extends Dialect {
     }
     throw new Error(`Unknown Symmetric Aggregate function ${funcName}`);
   }
-
-  // sqlAggDistinct: not yet implemented for ClickHouse.
-  // The DuckDB approach (subquery with UNNEST) fails because ClickHouse
-  // can't handle correlated subqueries. The inline approach (arrayReduce +
-  // arrayMap) fails because the func callback generates standard aggregate
-  // calls that can't accept array arguments, and groupArray can't be nested
-  // inside another aggregate function.
 
   sqlGenerateUUID(): string {
     return 'generateUUIDv4()';

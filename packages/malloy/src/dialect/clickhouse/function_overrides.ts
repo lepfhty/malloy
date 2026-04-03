@@ -38,38 +38,4 @@ export const CLICKHOUSE_MALLOY_STANDARD_OVERLOADS: OverrideMap = {
   least: {
     sql: 'CASE WHEN countEqual([${...values}], NULL) > 0 THEN NULL ELSE least(${...values}) END',
   },
-  lag: {
-    bare: {
-      sql: 'lagInFrame(toNullable(${value}))',
-      needsWindowOrderBy: true,
-      between: {preceding: -1, following: -1},
-    },
-    with_offset: {
-      sql: 'lagInFrame(toNullable(${value}), ${offset})',
-      needsWindowOrderBy: true,
-      between: {preceding: -1, following: -1},
-    },
-    with_default: {
-      sql: 'lagInFrame(toNullable(${value}), ${offset}, ${default})',
-      needsWindowOrderBy: true,
-      between: {preceding: -1, following: -1},
-    },
-  },
-  lead: {
-    bare: {
-      sql: 'leadInFrame(toNullable(${value}))',
-      needsWindowOrderBy: true,
-      between: {preceding: -1, following: -1},
-    },
-    with_offset: {
-      sql: 'leadInFrame(toNullable(${value}), ${offset})',
-      needsWindowOrderBy: true,
-      between: {preceding: -1, following: -1},
-    },
-    with_default: {
-      sql: 'leadInFrame(toNullable(${value}), ${offset}, ${default})',
-      needsWindowOrderBy: true,
-      between: {preceding: -1, following: -1},
-    },
-  },
 };

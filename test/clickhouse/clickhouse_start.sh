@@ -24,7 +24,7 @@ else
     -p "$NATIVE_PORT":9000 \
     -v "$DATADIR":/var/lib/clickhouse/user_files/data \
     -e CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1 \
-    clickhouse/clickhouse-server:25.3
+    clickhouse/clickhouse-server:26.3
 
   echo -n "Waiting for ClickHouse to start"
   counter=0

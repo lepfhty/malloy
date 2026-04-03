@@ -1,8 +1,8 @@
 # ClickHouse Dialect
 
-ClickHouse dialect for Malloy. Targets ClickHouse 25.3+.
+ClickHouse dialect for Malloy. Targets ClickHouse 26.3 LTS.
 
-Test status: 654 / 737 passing (89%), 47 skipped, 35 failing. 12 of 18 test suites fully green.
+Test status: 661 / 737 passing (90%), 50 skipped, 25 failing. 14 of 18 test suites fully green.
 
 ## Connection Settings
 
@@ -106,13 +106,7 @@ Row IDs for distinct keys use `arrayEnumerate(source)`, aliased to `__row_id_fro
 
 ## Window Functions
 
-ClickHouse does not have standard SQL `LAG`/`LEAD` functions. The dialect uses `lagInFrame`/`leadInFrame` with three adjustments:
-
-1. **Frame specification**: `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`. Without this, the default frame only includes rows up to the current row, and the function returns the column's type default (0 for numbers, empty string for strings) instead of looking ahead/behind.
-
-2. **Nullable wrapping**: `lagInFrame(toNullable(value))`. Without `toNullable()`, positions beyond the frame boundary return the type default instead of NULL.
-
-3. **Window ordering**: The override must include `needsWindowOrderBy: true`. When overriding a function's `impl`, all properties from the base definition are replaced — including `needsWindowOrderBy`. Without it, no ORDER BY is generated and the window function operates over arbitrary row order.
+Standard `LAG`/`LEAD` window functions are available since ClickHouse 25.6. No overrides are needed on 26.3+.
 
 ## Type System
 
@@ -157,7 +151,6 @@ ClickHouse offers `uniq`, `uniqCombined`, `uniqMerge`, and `uniqCombinedMerge` a
 
 | Function | ClickHouse SQL | Notes |
 |---|---|---|
-| `lag`/`lead` | `lagInFrame(toNullable(value))` / `leadInFrame(toNullable(value))` | With UNBOUNDED frame and `needsWindowOrderBy` |
 | `div` | `intDiv(a, b)` | |
 | `strpos` | `positionUTF8(str, substr)` | |
 | `log` | `log(value) / log(base)` | ClickHouse `log()` is natural log only; change-of-base formula |
@@ -178,27 +171,31 @@ Backtick-quoted: `` `identifier` ``. ClickHouse is case-sensitive for identifier
 
 Test tables are created by `test/clickhouse/clickhouse_start.sh` using `MergeTree()` with per-table `ORDER BY` clauses. The `airports` and `flights` tables include `SAMPLE BY cityHash64(key)` to support ClickHouse's percentage-based sampling (`SAMPLE 0.1`). Tables without a suitable key (e.g., `alltypes`) use `ORDER BY tuple()`.
 
-## Version-Dependent Features
+## Version History
 
-The dialect targets ClickHouse 25.3+. Some features require newer versions:
+### 26.3 LTS (current target)
+- Standard `LAG`/`LEAD` window functions available (added in 25.6). Removed `lagInFrame`/`leadInFrame` workarounds.
+- `system.unicode` table available (added in 25.12). Could enable proper `unicode()` function in the future.
+- `enable_named_columns_in_function_tuple` (24.7+) exists but is still broken with `groupArrayIf` in CTEs.
 
-| Feature | Min Version | Potential Use |
-|---|---|---|
-| `enable_named_columns_in_function_tuple` | 24.7 | Would simplify named tuple creation, but currently broken with `groupArrayIf` in CTEs. |
-| `system.unicode` table | 25.12 | Could implement the `unicode()` function override to return Unicode codepoints. Currently no clean way to extract codepoints from multi-byte UTF-8 characters. |
+### 25.3 LTS (previous target)
+- No standard LAG/LEAD. Used `lagInFrame(toNullable(value))` with `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` frame and `needsWindowOrderBy: true`.
+- No `system.unicode` table. `unicode()` override uses `reinterpretAsUInt32` which only works for single-byte characters.
+
+### Version-dependent SQL generation
 
 The dialect does not currently have access to the server version at SQL generation time. The `QueryInfo` interface anticipates this (comment: "e.g. version number of db"), but the plumbing is not yet built. To support version-dependent SQL generation:
 1. Query `SELECT version()` at connection init
 2. Store on the connection
 3. Pass to the dialect via `QueryInfo` or constructor
 
-## Remaining Test Failures (35)
+## Remaining Test Failures (25)
 
 | Category | Count | Root cause | Status |
 |---|---|---|---|
 | JOIN ON restrictions | ~8 | ClickHouse requires at least one equality predicate in JOIN ON. Expressions like `ON 1=1` or `ON true` fail with "Cannot determine join keys." | ClickHouse limitation |
 | string_agg ordering | ~7 | ClickHouse's `groupArray` does not support ORDER BY inside the function. Sorting by value ascending works via `arraySort(groupArray(...))`, but sorting by a different expression or in DESC order is not supported. Companion-array sorting (`arraySort((x,y)->y, vals, keys)`) is possible but requires the Malloy expression compiler to expose order-by expressions separately from the `ORDER BY` keyword. | Needs expression compiler changes |
-| `sqlAggDistinct` | ~6 | Generalized distinct aggregates used for fanout queries. DuckDB implements this with a correlated subquery, but ClickHouse does not support correlated subqueries. An inline approach using `arrayReduce`+`arrayMap` does not work because the callback generates standard aggregate function calls that cannot accept array arguments. | Blocked: needs new approach |
+| `sqlAggDistinct` | ~6 | Generalized distinct aggregates used for fanout queries. DuckDB implements this with a correlated subquery, but ClickHouse does not reliably support correlated subqueries. `supportsAggDistinct` set to `false`; these tests are now skipped. | Skipped via capability flag |
 | Compiler CASE WHEN + complex types | ~5 | The Malloy compiler generates `CASE WHEN group_set=N THEN field END` in stage expressions. When the field is an Array or Tuple, this produces `Nullable(Array(...))` which ClickHouse rejects. This code path is in the compiler, not the dialect. | Needs compiler change |
 | Timezone edge cases | ~3 | Remaining timezone tests involve the compiler wrapping timezone-aware nested queries with `CASE WHEN`, hitting the same Nullable(Array) issue. | Same as above |
 | Minor function differences | ~4 | `concat`: ClickHouse DateTime64(3) always renders with `.000` milliseconds when cast to string. `chr`/`unicode`: no function to convert between Unicode codepoints and characters (available in 25.12 via `system.unicode`). `rand()`: deterministic within a single query row, so `rand()=rand()` is always true. | ClickHouse behavior |
