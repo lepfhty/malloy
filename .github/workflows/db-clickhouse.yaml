@@ -1,7 +1,9 @@
 name: 'DB:ClickHouse'
 permissions: {}
 
-on: workflow_call
+on:
+  workflow_call:
+  workflow_dispatch:
 
 jobs:
   test-clickhouse:
