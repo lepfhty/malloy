@@ -598,7 +598,9 @@ export class ClickHouseDialect extends Dialect {
   ): string {
     const tz = timezone || qtz(qi);
     if (tz) {
-      return `toTimeZone(toDateTime64('${literal}', 3), '${tz}')`;
+      // 3rd arg to toDateTime64 means "parse this string in this timezone"
+      // (not "convert from UTC to this timezone" which toTimeZone does)
+      return `toDateTime64('${literal}', 3, '${tz}')`;
     }
     return `toDateTime64('${literal}', 3)`;
   }
