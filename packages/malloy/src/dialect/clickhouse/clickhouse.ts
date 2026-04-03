@@ -109,7 +109,7 @@ export class ClickHouseDialect extends Dialect {
   supportsComplexFilteredSources = false;
   supportsArraysInData = true;
   compoundObjectInSchema = false;
-  booleanType: BooleanTypeSupport = 'number';
+  booleanType: BooleanTypeSupport = 'simulated';
   likeEscape = false;
   orderByClause: OrderByClauseType = 'ordinal';
   hasTimestamptz = false;
