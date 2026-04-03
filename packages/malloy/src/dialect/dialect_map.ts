@@ -29,6 +29,7 @@ import {StandardSQLDialect} from './standardsql';
 import {PrestoDialect, TrinoDialect} from './trino';
 import {MySQLDialect} from './mysql';
 import {DatabricksDialect} from './databricks';
+import {ClickHouseDialect} from './clickhouse';
 
 const dialectMap = new Map<string, Dialect>();
 
@@ -56,3 +57,4 @@ registerDialect(new TrinoDialect());
 registerDialect(new PrestoDialect());
 registerDialect(new MySQLDialect());
 registerDialect(new DatabricksDialect());
+registerDialect(new ClickHouseDialect());

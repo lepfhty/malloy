@@ -28,6 +28,7 @@ export {
   SnowflakeDialect,
   MySQLDialect,
   DatabricksDialect,
+  ClickHouseDialect,
   registerDialect,
   arg,
   qtz,

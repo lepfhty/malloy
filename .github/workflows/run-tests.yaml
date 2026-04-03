@@ -72,6 +72,8 @@ jobs:
       DATABRICKS_WAREHOUSE_ID: ${{ secrets.DATABRICKS_WAREHOUSE_ID }}
   db-duckdb-wasm:
     uses: './.github/workflows/db-duckdb-wasm.yaml'
+  db-clickhouse:
+    uses: './.github/workflows/db-clickhouse.yaml'
 
   # I think I have the sorted roughly longest to shortest
   # so the longer running jobs get workers sooner, not sure
@@ -90,6 +92,7 @@ jobs:
       # - db-motherduck
       - db-mysql
       - db-databricks
+      - db-clickhouse
     runs-on: ubuntu-latest
     steps:
       - name: Success

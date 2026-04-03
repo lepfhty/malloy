@@ -49,6 +49,10 @@ import {
   MySQLExecutor,
 } from '@malloydata/db-mysql/src/mysql_connection';
 import {DatabricksConnection} from '@malloydata/db-databricks/src/databricks_connection';
+import {
+  ClickHouseConnection,
+  ClickHouseExecutor,
+} from '@malloydata/db-clickhouse/src/clickhouse_connection';
 import {EventEmitter} from 'events';
 
 export class SnowflakeTestConnection extends SnowflakeConnection {
@@ -278,6 +282,12 @@ export function runtimeFor(dbName: string): SingleConnectionRuntime {
             defaultSchema: process.env['DATABRICKS_SCHEMA'],
           });
         }
+        break;
+      case 'clickhouse':
+        connection = new ClickHouseConnection(
+          dbName,
+          ClickHouseExecutor.getConnectionOptionsFromEnv()
+        );
         break;
       default:
         throw new Error(`Unknown runtime "${dbName}`);

@@ -1,0 +1,27 @@
+name: 'DB:ClickHouse'
+permissions: {}
+
+on: workflow_call
+
+jobs:
+  test-clickhouse:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20.x
+      - name: npm install, build, and test
+        run: |
+          npm ci --loglevel error
+          npm run build
+          ./test/clickhouse/clickhouse_start.sh
+          npm run ci-clickhouse
+          ./test/clickhouse/clickhouse_stop.sh
+        env:
+          CLICKHOUSE_HOST: http://localhost:18123
+          CLICKHOUSE_DATABASE: malloytest

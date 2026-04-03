@@ -51,6 +51,8 @@ function getSplitFunction(db: string) {
       `string_to_array(${column}, '${splitChar}')`,
     'motherduck': (column: string, splitChar: string) =>
       `string_to_array(${column}, '${splitChar}')`,
+    'clickhouse': (column: string, splitChar: string) =>
+      `splitByString('${splitChar}', ${column})`,
     'snowflake': (column: string, splitChar: string) =>
       `split(${column}, '${splitChar}')`,
     'trino': (column: string, splitChar: string) =>

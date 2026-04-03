@@ -1580,14 +1580,14 @@ export class QueryQuery extends QueryField {
 
           // Generate a single ROW_NUMBER() with all ORDER BY fields
           limitExpressions.push(
-            `CASE WHEN GROUP_SET=${result.groupSet} THEN
+            `CASE WHEN group_set=${result.groupSet} THEN
                ROW_NUMBER() OVER (${p} ORDER BY ${obSQL.join(
                  ','
                )}) END  as __row_number__${result.groupSet}`
           );
 
           // if the group set is a leaf, we can write a simple where clause.
-          const filterClause = `(GROUP_SET = ${
+          const filterClause = `(group_set = ${
             result.groupSet
           } AND __row_number__${result.groupSet} > ${
             limitValues[result.groupSet]

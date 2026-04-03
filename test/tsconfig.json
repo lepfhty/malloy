@@ -36,6 +36,9 @@
       "path": "../packages/malloy-db-duckdb"
     },
     {
+      "path": "../packages/malloy-db-clickhouse"
+    },
+    {
       "path": "../packages/malloy-filter"
     },
     {

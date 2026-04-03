@@ -13,6 +13,7 @@
     {"path": "packages/malloy-db-trino"},
     {"path": "packages/malloy-db-mysql"},
     {"path": "packages/malloy-db-databricks"},
+    {"path": "packages/malloy-db-clickhouse"},
     {"path": "packages/malloy-malloy-sql"},
     {"path": "test"},
     {"path": "packages/malloy-filter"},

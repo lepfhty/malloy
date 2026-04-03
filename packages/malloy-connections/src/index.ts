@@ -13,3 +13,4 @@ import '@malloydata/db-databricks';
 import '@malloydata/db-postgres';
 import '@malloydata/db-snowflake';
 import '@malloydata/db-trino';
+import '@malloydata/db-clickhouse';

@@ -1,0 +1,61 @@
+/*
+ * Copyright Contributors to the Malloy project
+ * SPDX-License-Identifier: MIT
+ */
+
+import type {
+  DefinitionBlueprintMap,
+  OverloadedDefinitionBlueprint,
+} from '../functions/util';
+import {def} from '../functions/util';
+
+const string_agg: OverloadedDefinitionBlueprint = {
+  default_separator: {
+    takes: {'value': {dimension: 'string'}},
+    returns: {measure: 'string'},
+    supportsOrderBy: true,
+    // ClickHouse groupArray doesn't support ORDER BY inside the function,
+    // so we sort the array after collection. ${order_by:} is consumed by
+    // Malloy but not emitted into the SQL template for ClickHouse.
+    impl: {sql: "arrayStringConcat(arraySort(groupArray(${value})), ',')"},
+  },
+  with_separator: {
+    takes: {
+      'value': {dimension: 'string'},
+      'separator': {literal: 'string'},
+    },
+    returns: {measure: 'string'},
+    supportsOrderBy: true,
+    impl: {
+      sql: 'arrayStringConcat(arraySort(groupArray(${value})), ${separator})',
+    },
+  },
+};
+
+const string_agg_distinct: OverloadedDefinitionBlueprint = {
+  default_separator: {
+    ...string_agg['default_separator'],
+    isSymmetric: true,
+    supportsOrderBy: 'only_default',
+    impl: {
+      sql: "arrayStringConcat(groupUniqArray(${value}), ',')",
+      defaultOrderByArgIndex: 0,
+    },
+  },
+  with_separator: {
+    ...string_agg['with_separator'],
+    isSymmetric: true,
+    supportsOrderBy: 'only_default',
+    impl: {
+      sql: 'arrayStringConcat(groupUniqArray(${value}), ${separator})',
+      defaultOrderByArgIndex: 0,
+    },
+  },
+};
+
+export const CLICKHOUSE_DIALECT_FUNCTIONS: DefinitionBlueprintMap = {
+  string_agg,
+  string_agg_distinct,
+  ...def('repeat', {'str': 'string', 'n': 'number'}, 'string'),
+  ...def('reverse', {'str': 'string'}, 'string'),
+};

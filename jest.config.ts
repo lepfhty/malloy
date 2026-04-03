@@ -1,6 +1,9 @@
 import type {Config} from 'jest';
 
 process.env.TZ = 'America/Los_Angeles';
+process.env['CLICKHOUSE_HOST'] ??= 'http://localhost:18123';
+process.env['CLICKHOUSE_DATABASE'] ??= 'malloytest';
+process.env['MALLOY_DATABASE'] ??= 'clickhouse';
 
 const transformIgnoreModules = ['@motherduck/wasm-client'].join('|');
 
@@ -136,6 +139,11 @@ const config: Config = {
       ...defaultConfig,
       displayName: 'db-databricks',
       roots: ['<rootDir>/packages/malloy-db-databricks/'],
+    },
+    {
+      ...defaultConfig,
+      displayName: 'db-clickhouse',
+      roots: ['<rootDir>/packages/malloy-db-clickhouse/'],
     },
   ],
 };
